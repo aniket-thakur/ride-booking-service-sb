@@ -13,5 +13,5 @@ public class NearByDriverLocResponseDto {
     String driverId;
     Double latitude;
     Double longitude;
-    Distance distance;
+//    Distance distance;
 }
