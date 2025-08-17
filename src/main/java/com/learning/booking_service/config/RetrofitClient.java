@@ -22,7 +22,7 @@ public class RetrofitClient {
     }
 
     @Bean
-    public LocationServiceApi createRetroFitCLient(){
+    public LocationServiceApi createRetroFitClient(){
         return new Retrofit.Builder()
                 .baseUrl(getUrl("LOCATION-SERVICE"))
                 .addConverterFactory(GsonConverterFactory.create())

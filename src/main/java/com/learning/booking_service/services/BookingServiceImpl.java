@@ -86,8 +86,8 @@ public class BookingServiceImpl implements BookingService {
             public void onResponse(Call<NearByDriverLocResponseDto[]> call, Response<NearByDriverLocResponseDto[]> response) {
                 if(response.isSuccessful() && response.body() != null){
                     for(NearByDriverLocResponseDto res : response.body()){
-                        System.out.printf("Driver ID: "+ res.getDriverId() + "Longitude: "+res.getLongitude()
-                                +"Latitude: "+ res.getLatitude());
+                        System.out.println("Driver ID: "+ res.getDriverId() + " || Longitude: "+res.getLongitude()
+                                +" || Latitude: "+ res.getLatitude());
                     }
                 }
                 else{

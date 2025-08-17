@@ -38,7 +38,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-netflix-eureka-client
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:4.3.0")
     // local entity service
-    implementation 'com.learning:entityService:1.0.3'
+    implementation 'com.learning:entityService:1.0.4'
     // retrofit
     // https://mvnrepository.com/artifact/com.squareup.retrofit2/retrofit
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
