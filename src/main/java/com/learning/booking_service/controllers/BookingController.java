@@ -2,7 +2,10 @@ package com.learning.booking_service.controllers;
 
 import com.learning.booking_service.dto.CreateBookingDto;
 import com.learning.booking_service.dto.CreateBookingResponseDto;
+import com.learning.booking_service.dto.UpdateBookingReqDto;
+import com.learning.booking_service.dto.UpdateBookingResDto;
 import com.learning.booking_service.services.BookingServiceImpl;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +20,21 @@ public class BookingController {
         this.bookingService = bookingServiceimpl;
     }
 
-    @PostMapping("/create-booking")
+    @PostMapping("/bookings")
     public ResponseEntity<CreateBookingResponseDto> createBooking(
             @RequestBody CreateBookingDto createBookingDto){
         CreateBookingResponseDto res =  bookingService.createBooking(createBookingDto);
 
         return new ResponseEntity<>(res, HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/bookings/{bookingId}")
+    public ResponseEntity<UpdateBookingResDto> UpdateBooking(
+            @RequestBody UpdateBookingReqDto updateBookingReqDto, @PathVariable Long bookingId){
+
+        UpdateBookingResDto res =  bookingService.updateBookingStatus(updateBookingReqDto);
+
+        return new ResponseEntity<>(res, HttpStatus.OK);
 
     }
 }

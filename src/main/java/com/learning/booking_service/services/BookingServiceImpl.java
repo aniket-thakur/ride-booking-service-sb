@@ -1,17 +1,17 @@
 package com.learning.booking_service.services;
 
 import com.learning.booking_service.client.LocationServiceApi;
-import com.learning.booking_service.dto.CreateBookingDto;
-import com.learning.booking_service.dto.CreateBookingResponseDto;
-import com.learning.booking_service.dto.NearByDriverLocResponseDto;
-import com.learning.booking_service.dto.NearByDriverLocationDto;
+import com.learning.booking_service.dto.*;
 import com.learning.booking_service.repositories.BookingRepository;
+import com.learning.booking_service.repositories.DriverRepository;
 import com.learning.booking_service.repositories.PassengerRepository;
 import com.learning.entityService.models.Booking;
 import com.learning.entityService.models.BookingStatus;
+import com.learning.entityService.models.Driver;
 import com.learning.entityService.models.Passenger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -19,6 +19,7 @@ import retrofit2.Response;
 
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -27,18 +28,23 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final RestTemplate restTemplate;
     private final LocationServiceApi locationServiceApi;
+    private final DriverRepository driverRepository;
     private static String LOCATION_SERVICE_ENDPOINT = "http://localhost:7477/api/v1/location/";
 
-    public BookingServiceImpl(PassengerRepository passengerRepository, BookingRepository bookingRepository,
-                              RestTemplate restTemplate, LocationServiceApi locationServiceApi){
+    public BookingServiceImpl(PassengerRepository passengerRepository,
+                              BookingRepository bookingRepository,
+                              RestTemplate restTemplate,
+                              LocationServiceApi locationServiceApi,
+                              DriverRepository driverRepository){
         this.passengerRepository = passengerRepository;
         this.bookingRepository = bookingRepository;
         this.restTemplate = restTemplate;
         this.locationServiceApi = locationServiceApi;
+        this.driverRepository = driverRepository;
     }
 
     public CreateBookingResponseDto createBooking(CreateBookingDto bookingdetails){
-        System.out.printf("asjaj");
+
         Optional<Passenger> passenger = passengerRepository.findById(bookingdetails.getPassengerId());
         Booking booking = new Booking().builder()
                         .bookingStatus(BookingStatus.ASSIGNING_DRIVER)
@@ -51,7 +57,7 @@ public class BookingServiceImpl implements BookingService {
         // make an api call to location service to fetch the nearby drivers
 
         // create the payload
-        NearByDriverLocationDto request = new NearByDriverLocationDto().builder()
+        NearByDriverLocationDto request = NearByDriverLocationDto.builder()
                 .latitude(bookingdetails.getPickupLocation().getLatitude())
                 .longitude(bookingdetails.getPickupLocation().getLongitude())
                 .build();
@@ -75,6 +81,42 @@ public class BookingServiceImpl implements BookingService {
                 .pickupPoint(newBooking.getPickupPoint())
                 .dropPoint((newBooking.getDropPoint()))
 //                .drivers(Optional.of(newBooking.getDriver()))
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public UpdateBookingResDto updateBookingStatus(UpdateBookingReqDto updatedBooking) {
+        if(updatedBooking.getStatus() == BookingStatus.CANCELLED){
+            return UpdateBookingResDto.builder()
+                    .bookingId(updatedBooking.getBookingId())
+                    .bookingStatus(updatedBooking.getStatus())
+                    .cancelReason(updatedBooking.getCancelReason())
+                    .build();
+        }
+        Driver driver = driverRepository.findById(updatedBooking.getDriverId())
+                .orElseThrow(()-> new RuntimeException("Driver not found"));
+
+        bookingRepository.updateBookingStatusAndDriver(
+                updatedBooking.getStatus(),
+                driver.getId(),
+                updatedBooking.getBookingId()
+                );
+
+        DriverDto driverDetails= DriverDto.builder()
+                .id(driver.getId())
+                .name(driver.getName())
+                .license_number(driver.getLicenseNumber())
+                .age(driver.getAge())
+                .mobile_number(driver.getMobileNumber())
+                .rating(driver.getRating())
+                .build();
+
+
+        return UpdateBookingResDto.builder()
+                .bookingId(updatedBooking.getBookingId())
+                .bookingStatus(updatedBooking.getStatus())
+                .driver(driverDetails)
                 .build();
     }
 
